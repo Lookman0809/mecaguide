@@ -345,27 +345,68 @@ async function ghUploadFile(owner, repo, branch, path, arrayBuffer, message){
 
   // Repo déjà initialisé : on peut utiliser l'API Git Data normalement,
   // plus robuste pour les gros fichiers que l'API Contents.
+  // Le blob ne dépend pas de l'état de la branche : on le crée une seule fois.
   const blob = await ghApi(`/repos/${owner}/${repo}/git/blobs`, {
     method:'POST', body: JSON.stringify({ content: base64, encoding:'base64' })
   });
-  const baseCommit = await ghApi(`/repos/${owner}/${repo}/git/commits/${ref.object.sha}`);
-  const tree = await ghApi(`/repos/${owner}/${repo}/git/trees`, {
-    method:'POST', body: JSON.stringify({
-      base_tree: baseCommit.tree.sha, tree: [{ path, mode:'100644', type:'blob', sha: blob.sha }]
-    })
-  });
-  const commit = await ghApi(`/repos/${owner}/${repo}/git/commits`, {
-    method:'POST', body: JSON.stringify({ message, tree: tree.sha, parents: [ref.object.sha] })
-  });
-  await ghApi(`/repos/${owner}/${repo}/git/refs/heads/${branch}`, {
-    method:'PATCH', body: JSON.stringify({ sha: commit.sha })
-  });
-  return `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${path}`;
+
+  // La suite (tree/commit/ref) peut échouer en "non fast-forward" si la
+  // branche a bougé entre-temps (propagation GitHub un peu lente après un
+  // upload précédent) : on relit l'état frais et on réessaie.
+  let lastErr = null;
+  for(let attempt=0; attempt<4; attempt++){
+    try{
+      const curRef = attempt===0 ? ref : await ghApi(`/repos/${owner}/${repo}/git/ref/heads/${branch}`);
+      const baseCommit = await ghApi(`/repos/${owner}/${repo}/git/commits/${curRef.object.sha}`);
+      const tree = await ghApi(`/repos/${owner}/${repo}/git/trees`, {
+        method:'POST', body: JSON.stringify({
+          base_tree: baseCommit.tree.sha, tree: [{ path, mode:'100644', type:'blob', sha: blob.sha }]
+        })
+      });
+      const commit = await ghApi(`/repos/${owner}/${repo}/git/commits`, {
+        method:'POST', body: JSON.stringify({ message, tree: tree.sha, parents: [curRef.object.sha] })
+      });
+      await ghApi(`/repos/${owner}/${repo}/git/refs/heads/${branch}`, {
+        method:'PATCH', body: JSON.stringify({ sha: commit.sha })
+      });
+      return `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${path}`;
+    }catch(err){
+      lastErr = err;
+      if(!/fast forward|409|422/i.test(err.message)) throw err; // autre type d'erreur : pas la peine de réessayer
+      await new Promise(r=>setTimeout(r, 500*(attempt+1))); // petite pause avant de relire l'état
+    }
+  }
+  throw lastErr;
 }
 
 async function ghUploadJSON(owner, repo, branch, path, obj, message){
   const buf = new TextEncoder().encode(JSON.stringify(obj));
   return ghUploadFile(owner, repo, branch, path, buf.buffer, message);
+}
+
+function base64ToUint8Array(base64){
+  const binary = atob(base64.replace(/\n/g,''));
+  const bytes = new Uint8Array(binary.length);
+  for(let i=0;i<binary.length;i++) bytes[i] = binary.charCodeAt(i);
+  return bytes;
+}
+
+// Chemin GitHub à partir d'une ancienne githubUrl (chapitres créés avant l'ajout du champ `path`)
+function pathFromRawUrl(owner, repo, branch, url){
+  const prefix = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/`;
+  return url && url.startsWith(prefix) ? decodeURIComponent(url.slice(prefix.length)) : null;
+}
+
+// Lecture d'un fichier privé : le lien raw.githubusercontent.com ne fonctionne
+// pas sur un repo privé sans authentification, donc on passe par l'API (Contents
+// pour retrouver le sha, puis Git Blobs qui accepte les gros fichiers jusqu'à 100 Mo).
+async function ghFetchFileBytes(chapter){
+  const s = DATA.settings;
+  const path = chapter.path || pathFromRawUrl(s.ghOwner, s.ghRepo, s.ghBranch||'main', chapter.githubUrl);
+  if(!path) throw new Error("Chemin du fichier introuvable pour ce chapitre.");
+  const meta = await ghApi(`/repos/${s.ghOwner}/${s.ghRepo}/contents/${path}`);
+  const blob = await ghApi(`/repos/${s.ghOwner}/${s.ghRepo}/git/blobs/${meta.sha}`);
+  return base64ToUint8Array(blob.content);
 }
 
 async function ghListFolder(owner, repo, path){
@@ -642,27 +683,26 @@ function renderProceduresTab(g){
 
 /* ---------- ADD CHAPTER ---------- */
 function renderAddChapter(guideId){
-  const g = DATA.guides.find(x=>x.id===guideId);
   return `
   <div class="topbar">
     <button class="icon-btn" data-navobj='{"view":"guide","id":"${guideId}","tab":"chapitres"}'>←</button>
-    <h1 style="font-size:17px;">Ajouter un chapitre</h1>
+    <h1 style="font-size:17px;">Ajouter des chapitres</h1>
     <div style="width:38px;"></div>
   </div>
   ${!guideStorageConfigured() ? `<div class="banner-warn">
-    ⚠️ Stockage GitHub non configuré — configure-le dans Réglages avant d'ajouter un PDF.
+    ⚠️ Stockage GitHub non configuré — configure-le dans Réglages avant d'ajouter des PDF.
   </div>` : `<div class="banner-info">
-    N'importe quel nom de fichier fonctionne — s'il suit le format Nissan
-    ("A_-_AA_-_Nom.pdf"), le libellé est pré-rempli automatiquement, sinon tu le
-    tapes toi-même juste après, librement.
+    Tu peux sélectionner plusieurs PDF d'un coup. Le libellé de chacun est pré-rempli
+    automatiquement s'il suit le format Nissan, sinon tu le corriges toi-même — tout reste
+    éditable avant d'uploader.
   </div>`}
   <div class="field">
-    <label>Fichier PDF</label>
-    <input type="file" id="chapFile" accept="application/pdf" ${!guideStorageConfigured()?'disabled':''}>
+    <label>Fichiers PDF</label>
+    <input type="file" id="chapFile" accept="application/pdf" multiple ${!guideStorageConfigured()?'disabled':''}>
   </div>
-  <div id="chapPreview"></div>
+  <div id="chapBatchList"></div>
   <div class="btn-row">
-    <button class="btn btn-primary" id="chapUploadBtn" disabled>Analyser et uploader</button>
+    <button class="btn btn-primary" id="chapUploadBtn" disabled>Uploader</button>
   </div>
   `;
 }
@@ -927,7 +967,7 @@ function renderSettings(){
   <div class="btn-row">
     <button class="btn btn-primary" id="saveSettings">Enregistrer</button>
   </div>
-  <div style="text-align:center;color:var(--ink-dim);font-size:11.5px;margin-top:18px;">MecaGuide v1.0.1</div>
+  <div style="text-align:center;color:var(--ink-dim);font-size:11.5px;margin-top:18px;">MecaGuide v1.1.1</div>
   `;
 }
 
@@ -1006,55 +1046,118 @@ function wireAddGuide(){
   });
 }
 
-/* ---- Add Chapter ---- */
-let pendingChapterFile = null;
+/* ---- Add Chapter (multi-fichiers) ---- */
+let batchFiles = []; // [{file, section, code, label, status:'pending'|'uploading'|'done'|'error', errorMsg}]
 function wireAddChapter(){
+  batchFiles = [];
   const fileInput = document.getElementById('chapFile');
   if(!fileInput) return;
   fileInput.addEventListener('change', (e)=>{
-    const f = e.target.files[0];
-    if(!f) return;
-    pendingChapterFile = f;
-    const parsed = parseChapterFilename(f.name);
-    document.getElementById('chapPreview').innerHTML = `
-      <div class="field"><label>Libellé du chapitre</label><input id="cLabel" value="${esc(parsed.label)}"></div>
-      <div class="hint px" style="margin:-6px 0 12px;">Modifie ce texte comme tu veux — aucun format n'est imposé.</div>
-      <div class="field">
-        <label>Section / Code <span style="text-transform:none;font-weight:400;">(optionnel, pour le tri)</span></label>
-        <div style="display:flex;gap:8px;">
-          <input id="cSection" value="${esc(parsed.section)}" placeholder="ex: B" style="width:70px;">
-          <input id="cCode" value="${esc(parsed.code)}" placeholder="ex: EM" style="width:90px;">
-        </div>
-      </div>
-      <div class="hint px">${(f.size/1024/1024).toFixed(1)} Mo</div>
-    `;
-    document.getElementById('chapUploadBtn').disabled = false;
+    const files = Array.from(e.target.files || []);
+    batchFiles = files.map(f=>{
+      const parsed = parseChapterFilename(f.name);
+      return { file:f, section:parsed.section, code:parsed.code, label:parsed.label, status:'pending', errorMsg:'' };
+    });
+    renderBatchList();
   });
-  document.getElementById('chapUploadBtn').addEventListener('click', async ()=>{
-    if(!pendingChapterFile) return;
-    const btn = document.getElementById('chapUploadBtn');
-    btn.disabled = true; btn.innerHTML = `<span class="spinner"></span> Upload en cours…`;
+  document.getElementById('chapUploadBtn').addEventListener('click', startBatchUpload);
+}
+
+function renderBatchList(){
+  const box = document.getElementById('chapBatchList');
+  const btn = document.getElementById('chapUploadBtn');
+  if(batchFiles.length===0){ box.innerHTML=''; btn.disabled=true; return; }
+  btn.disabled = false;
+  box.innerHTML = batchFiles.map((bf,i)=>`
+    <div class="card" style="margin:0 18px 8px;">
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">
+        <div style="flex:1;font-size:12px;color:var(--ink-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+          ${esc(bf.file.name)} · ${(bf.file.size/1024/1024).toFixed(1)} Mo
+        </div>
+        <span id="bfStatus-${i}">${batchStatusIcon(bf)}</span>
+        ${bf.status==='pending' ? `<button data-rmbatch="${i}" style="background:none;border:none;color:var(--ink-dim);cursor:pointer;">✕</button>` : ''}
+      </div>
+      <input data-bflabel="${i}" value="${esc(bf.label)}" placeholder="Libellé du chapitre"
+        style="width:100%;background:#0B1220;border:1px solid var(--line);border-radius:8px;padding:8px 10px;color:var(--ink);font-size:13.5px;margin-bottom:6px;"
+        ${bf.status!=='pending'?'disabled':''}>
+      <div style="display:flex;gap:8px;">
+        <input data-bfsection="${i}" value="${esc(bf.section)}" placeholder="Section"
+          style="width:70px;background:#0B1220;border:1px solid var(--line);border-radius:8px;padding:8px 10px;color:var(--ink);font-size:13px;" ${bf.status!=='pending'?'disabled':''}>
+        <input data-bfcode="${i}" value="${esc(bf.code)}" placeholder="Code"
+          style="width:90px;background:#0B1220;border:1px solid var(--line);border-radius:8px;padding:8px 10px;color:var(--ink);font-size:13px;" ${bf.status!=='pending'?'disabled':''}>
+      </div>
+      ${bf.status==='error' ? `<div class="hint" style="color:#FCA5A5;margin-top:6px;">${esc(bf.errorMsg)}</div>` : ''}
+    </div>`).join('');
+  box.querySelectorAll('[data-rmbatch]').forEach(el=>el.addEventListener('click', ()=>{
+    batchFiles.splice(+el.dataset.rmbatch,1); renderBatchList();
+  }));
+  box.querySelectorAll('[data-bflabel]').forEach(el=>el.addEventListener('input', ()=>{
+    batchFiles[+el.dataset.bflabel].label = el.value;
+  }));
+  box.querySelectorAll('[data-bfsection]').forEach(el=>el.addEventListener('input', ()=>{
+    batchFiles[+el.dataset.bfsection].section = el.value.toUpperCase();
+  }));
+  box.querySelectorAll('[data-bfcode]').forEach(el=>el.addEventListener('input', ()=>{
+    batchFiles[+el.dataset.bfcode].code = el.value.toUpperCase();
+  }));
+}
+function batchStatusIcon(bf){
+  if(bf.status==='uploading') return '<span class="spinner"></span>';
+  if(bf.status==='done') return '<span style="color:var(--accent);">✓</span>';
+  if(bf.status==='error') return `<button data-retrybatch style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:12px;">↻ Réessayer</button>`;
+  return '';
+}
+
+async function startBatchUpload(){
+  const btn = document.getElementById('chapUploadBtn');
+  btn.disabled = true;
+  const g = DATA.guides.find(x=>x.id===ROUTE.guideId);
+  const s = DATA.settings;
+  let okCount = 0, errCount = 0;
+
+  for(let i=0;i<batchFiles.length;i++){
+    const bf = batchFiles[i];
+    if(bf.status==='done') { okCount++; continue; }
+    bf.status = 'uploading';
+    document.getElementById(`bfStatus-${i}`).innerHTML = batchStatusIcon(bf);
+    btn.innerHTML = `<span class="spinner"></span> Upload ${i+1}/${batchFiles.length}…`;
     try{
-      const buf = await pendingChapterFile.arrayBuffer();
-      const s = DATA.settings;
-      const path = `guides/${ROUTE.guideId}/${Date.now()}-${pendingChapterFile.name}`;
-      const url = await ghUploadFile(s.ghOwner, s.ghRepo, s.ghBranch||'main', path, buf, `Ajout chapitre: ${pendingChapterFile.name}`);
-      const g = DATA.guides.find(x=>x.id===ROUTE.guideId);
+      const buf = await bf.file.arrayBuffer();
+      const path = `guides/${ROUTE.guideId}/${Date.now()}-${bf.file.name}`;
+      const url = await ghUploadFile(s.ghOwner, s.ghRepo, s.ghBranch||'main', path, buf, `Ajout chapitre: ${bf.file.name}`);
       g.chapters.push({
         id: uid(),
-        section: document.getElementById('cSection').value.trim().toUpperCase(),
-        code: document.getElementById('cCode').value.trim().toUpperCase(),
-        label: document.getElementById('cLabel').value.trim(),
-        githubUrl: url, uploaded:true, ocrDone:false
+        section: bf.section.trim().toUpperCase(),
+        code: bf.code.trim().toUpperCase(),
+        label: bf.label.trim() || bf.file.name,
+        githubUrl: url, path, uploaded:true, ocrDone:false
       });
       await saveData();
-      toast('Chapitre ajouté ✓');
-      nav({view:'guide', id:ROUTE.guideId, tab:'chapitres'});
+      bf.status = 'done';
+      okCount++;
     }catch(err){
       console.error(err);
-      toast('Échec : ' + err.message, 5000);
-      btn.disabled=false; btn.textContent='Analyser et uploader';
+      bf.status = 'error';
+      bf.errorMsg = err.message;
+      errCount++;
     }
+    document.getElementById(`bfStatus-${i}`).innerHTML = batchStatusIcon(bf);
+    wireBatchRetry();
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Uploader';
+  toast(`${okCount} chapitre${okCount>1?'s':''} ajouté${okCount>1?'s':''}${errCount?`, ${errCount} en échec — corrige et réessaie`:''}`, 4000);
+  if(errCount===0) nav({view:'guide', id:ROUTE.guideId, tab:'chapitres'});
+}
+function wireBatchRetry(){
+  document.querySelectorAll('[data-retrybatch]').forEach(el=>{
+    el.addEventListener('click', (e)=>{
+      const card = e.target.closest('.card');
+      const idx = Array.from(card.parentNode.children).indexOf(card);
+      batchFiles[idx].status = 'pending';
+      renderBatchList();
+    });
   });
 }
 
@@ -1069,13 +1172,13 @@ async function wireReader(){
     return;
   }
   try{
-    const loadingTask = pdfjsLib.getDocument(c.githubUrl);
-    readerState.pdf = await loadingTask.promise;
+    const bytes = await ghFetchFileBytes(c);
+    readerState.pdf = await pdfjsLib.getDocument({ data: bytes }).promise;
     await renderReaderPage(1);
   }catch(err){
     console.error(err);
     document.getElementById('readerCanvasWrap').innerHTML = `<div class="hint" style="padding:40px;">
-      Impossible de charger le PDF (réseau ou lien invalide).</div>`;
+      Impossible de charger le PDF : ${esc(err.message)}</div>`;
   }
 
   document.getElementById('pgPrev').addEventListener('click', ()=>{
@@ -1342,9 +1445,10 @@ async function loadStepMedia(runId){
   const media = document.getElementById('stepMedia');
   if(!step || !step.chapterId || !step.page){ return; }
   const chap = g.chapters.find(c=>c.id===step.chapterId);
-  if(!chap || !chap.githubUrl) return;
+  if(!chap || !(chap.githubUrl || chap.path)) return;
   try{
-    const pdf = await pdfjsLib.getDocument(chap.githubUrl).promise;
+    const bytes = await ghFetchFileBytes(chap);
+    const pdf = await pdfjsLib.getDocument({ data: bytes }).promise;
     const page = await pdf.getPage(step.page);
     const viewport = page.getViewport({ scale: 2 });
     const canvas = document.createElement('canvas');
