@@ -1,0 +1,1444 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>MecaGuide</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0F172A">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0F172A;
+    --panel:#16213D;
+    --panel-2:#1C2B4A;
+    --line:#243250;
+    --primary:#2563EB;
+    --primary-dark:#1E40AF;
+    --slate:#475569;
+    --accent:#22C55E;
+    --ink:#E2E8F0;
+    --ink-dim:#94A3B8;
+    --danger:#EF4444;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Plus Jakarta Sans',-apple-system,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    overscroll-behavior:none;
+  }
+  #app{
+    max-width:520px;
+    margin:0 auto;
+    min-height:100vh;
+    padding-bottom:76px;
+    position:relative;
+  }
+  a,button{font-family:inherit;}
+  ::-webkit-scrollbar{display:none;}
+
+  /* TOP BAR */
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:18px 18px 10px;
+  }
+  .brand{display:flex;align-items:center;gap:10px;}
+  .brand-logo{
+    width:34px;height:34px;border-radius:10px;
+    background:linear-gradient(135deg,var(--primary),var(--primary-dark));
+    display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;
+  }
+  .brand-name{font-weight:800;font-size:17px;letter-spacing:-0.01em;}
+  .icon-btn{
+    background:var(--panel);border:1px solid var(--line);color:var(--ink);
+    width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;
+    cursor:pointer;
+  }
+  .icon-btn:active{background:var(--panel-2);}
+
+  h1,h2,h3{margin:0;font-weight:700;letter-spacing:-0.01em;}
+  .section-title{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-dim);
+    margin:22px 18px 10px;font-weight:700;}
+
+  .view{padding:0 0 8px;}
+  .px{padding-left:18px;padding-right:18px;}
+
+  /* CARDS */
+  .card{
+    background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+    padding:14px 16px;
+  }
+  .card + .card{margin-top:10px;}
+  .list-row{
+    display:flex;align-items:center;gap:12px;
+    background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    padding:12px 14px;margin:0 18px 8px;cursor:pointer;
+  }
+  .list-row:active{background:var(--panel-2);}
+  .list-row .emoji{font-size:22px;width:30px;text-align:center;flex-shrink:0;}
+  .list-row .txt{flex:1;min-width:0;}
+  .list-row .txt .t{font-weight:600;font-size:14.5px;}
+  .list-row .txt .s{font-size:12.5px;color:var(--ink-dim);margin-top:2px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .chev{color:var(--ink-dim);font-size:18px;flex-shrink:0;}
+
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 18px;}
+  .cat-tile{
+    background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    padding:16px 14px;cursor:pointer;
+  }
+  .cat-tile:active{background:var(--panel-2);}
+  .cat-tile .ic{font-size:22px;margin-bottom:8px;}
+  .cat-tile .lbl{font-size:13.5px;font-weight:600;}
+
+  /* BUTTONS */
+  .btn{
+    border:none;border-radius:11px;padding:13px 18px;font-weight:700;font-size:14.5px;
+    cursor:pointer;width:100%;
+  }
+  .btn-primary{background:var(--primary);color:#fff;}
+  .btn-primary:active{background:var(--primary-dark);}
+  .btn-secondary{background:transparent;border:1px solid var(--line);color:var(--ink);}
+  .btn-ghost{background:var(--panel);border:1px solid var(--line);color:var(--ink);}
+  .btn-danger{background:transparent;border:1px solid var(--danger);color:var(--danger);}
+  .btn-row{display:flex;gap:10px;padding:0 18px;}
+  .btn-row .btn{flex:1;}
+  .btn[disabled]{opacity:.4;cursor:not-allowed;}
+  .btn-sm{padding:8px 12px;font-size:12.5px;border-radius:8px;width:auto;}
+
+  /* FORMS */
+  .field{margin:0 18px 12px;}
+  .field label{display:block;font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;
+    color:var(--ink-dim);margin-bottom:6px;font-weight:700;}
+  .field input, .field textarea, .field select{
+    width:100%;background:#0B1220;border:1px solid var(--line);border-radius:10px;
+    color:var(--ink);padding:11px 12px;font-size:14.5px;font-family:inherit;
+  }
+  .field textarea{min-height:70px;resize:vertical;}
+  .field .hint{font-size:11.5px;color:var(--ink-dim);margin-top:5px;}
+  .toggle-row{display:flex;align-items:center;justify-content:space-between;
+    background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin:0 18px 10px;}
+  .switch{width:42px;height:24px;border-radius:20px;background:var(--line);position:relative;cursor:pointer;flex-shrink:0;}
+  .switch.on{background:var(--primary);}
+  .switch .dot{position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:#fff;transition:.15s;}
+  .switch.on .dot{left:20px;}
+
+  .tag{display:inline-flex;align-items:center;gap:6px;background:var(--panel-2);
+    border:1px solid var(--line);border-radius:20px;padding:5px 10px 5px 12px;font-size:12.5px;margin:0 6px 6px 0;}
+  .tag button{background:none;border:none;color:var(--ink-dim);cursor:pointer;font-size:13px;padding:0;}
+  .tag-input-row{display:flex;gap:8px;margin:0 18px 12px;}
+  .tag-input-row input{flex:1;}
+
+  .empty{text-align:center;padding:40px 24px;color:var(--ink-dim);}
+  .empty .ic{font-size:34px;margin-bottom:10px;}
+  .empty .t{font-weight:700;color:var(--ink);margin-bottom:4px;}
+  .empty .s{font-size:13px;line-height:1.5;}
+
+  /* BOTTOM NAV */
+  .bottomnav{
+    position:fixed;bottom:0;left:50%;transform:translateX(-50%);
+    width:100%;max-width:520px;background:rgba(15,23,42,0.96);backdrop-filter:blur(8px);
+    border-top:1px solid var(--line);display:flex;padding:8px 10px calc(8px + env(safe-area-inset-bottom));
+  }
+  .navbtn{flex:1;background:none;border:none;color:var(--ink-dim);display:flex;flex-direction:column;
+    align-items:center;gap:3px;font-size:10.5px;font-weight:600;cursor:pointer;padding:6px 2px;}
+  .navbtn .ic{font-size:19px;}
+  .navbtn.active{color:var(--primary);}
+
+  /* TABS */
+  .tabs{display:flex;gap:4px;padding:0 18px 14px;border-bottom:1px solid var(--line);margin-bottom:14px;}
+  .tab{background:none;border:none;color:var(--ink-dim);font-size:13px;font-weight:700;
+    padding:8px 4px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-15px;}
+  .tab.active{color:var(--ink);border-bottom-color:var(--primary);}
+
+  /* PDF READER */
+  .reader-topbar{
+    position:sticky;top:0;z-index:5;background:var(--bg);
+    display:flex;align-items:center;gap:8px;padding:14px 14px 10px;border-bottom:1px solid var(--line);
+  }
+  .reader-topbar .title{flex:1;min-width:0;font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .reader-canvas-wrap{
+    overflow:auto;background:#000;display:flex;justify-content:center;
+    height:calc(100vh - 130px);position:relative;touch-action:pan-x pan-y pinch-zoom;
+  }
+  .reader-canvas-wrap canvas{display:block;}
+  .hotspot{position:absolute;border:2px solid transparent;border-radius:4px;cursor:pointer;}
+  .hotspot:hover, .hotspot:active{border-color:rgba(37,99,235,0.85);background:rgba(37,99,235,0.12);}
+  .reader-controls{display:flex;align-items:center;justify-content:center;gap:14px;padding:10px;border-top:1px solid var(--line);}
+  .reader-controls button{background:var(--panel);border:1px solid var(--line);color:var(--ink);
+    width:38px;height:38px;border-radius:10px;font-size:16px;cursor:pointer;}
+  .reader-controls .pageinfo{font-size:13px;color:var(--ink-dim);min-width:70px;text-align:center;}
+
+  .fullscreen-img{
+    position:fixed;inset:0;background:#000;z-index:50;display:flex;align-items:center;justify-content:center;
+    overflow:auto;
+  }
+  .fullscreen-img img{max-width:none;touch-action:pinch-zoom;}
+  .fs-close{position:fixed;top:16px;right:16px;z-index:51;background:rgba(255,255,255,0.12);
+    border:none;color:#fff;width:38px;height:38px;border-radius:50%;font-size:18px;cursor:pointer;}
+
+  /* STEP RUNNER */
+  .progress-track{height:6px;background:var(--line);border-radius:10px;overflow:hidden;margin:0 18px 4px;}
+  .progress-fill{height:100%;background:var(--primary);}
+  .step-media{background:#000;border-radius:14px;overflow:hidden;margin:14px 18px;min-height:220px;
+    display:flex;align-items:center;justify-content:center;position:relative;}
+  .step-media img{width:100%;display:block;}
+  .step-media .ph{color:var(--ink-dim);font-size:13px;padding:40px;text-align:center;}
+  .tip-card{display:flex;gap:10px;background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.35);
+    border-radius:12px;padding:12px 14px;margin:0 18px 14px;}
+  .tip-card .ic{font-size:18px;}
+  .tip-card .t{font-size:13px;line-height:1.45;}
+
+  .checklist-item{display:flex;align-items:center;gap:12px;background:var(--panel);border:1px solid var(--line);
+    border-radius:12px;padding:12px 14px;margin:0 18px 8px;}
+  .checklist-item input[type=checkbox]{width:20px;height:20px;accent-color:var(--primary);flex-shrink:0;}
+  .checklist-item .lbl{flex:1;font-size:14px;}
+  .checklist-item .qty{font-size:12px;color:var(--ink-dim);}
+
+  .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:40;display:flex;align-items:flex-end;}
+  .modal-sheet{background:var(--bg);border-radius:20px 20px 0 0;width:100%;max-width:520px;margin:0 auto;
+    max-height:85vh;overflow-y:auto;padding-bottom:24px;border-top:1px solid var(--line);}
+  .modal-sheet .handle{width:36px;height:4px;background:var(--line);border-radius:4px;margin:10px auto 6px;}
+
+  .toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--panel-2);
+    border:1px solid var(--line);color:var(--ink);padding:10px 18px;border-radius:20px;font-size:13px;
+    z-index:60;box-shadow:0 10px 30px rgba(0,0,0,0.4);}
+
+  .spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,0.25);border-top-color:#fff;
+    border-radius:50%;display:inline-block;animation:spin .7s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  .step-list-item{display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--line);
+    border-radius:10px;padding:10px 12px;margin-bottom:8px;}
+  .step-list-item .num{width:22px;height:22px;border-radius:50%;background:var(--panel-2);color:var(--ink-dim);
+    font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .step-list-item .txt{flex:1;font-size:13.5px;}
+  .step-list-item .del{background:none;border:none;color:var(--ink-dim);cursor:pointer;font-size:15px;}
+
+  .banner-warn{background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.35);color:#FCA5A5;
+    border-radius:12px;padding:12px 14px;margin:0 18px 14px;font-size:12.5px;line-height:1.5;}
+  .banner-info{background:rgba(37,99,235,0.08);border:1px solid rgba(37,99,235,0.35);color:#93C5FD;
+    border-radius:12px;padding:12px 14px;margin:0 18px 14px;font-size:12.5px;line-height:1.5;}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+  pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+</script>
+<script>
+/* =========================================================
+   MECAGUIDE — v0.1
+   Stockage: window.storage (metadonnees) + GitHub (PDF + OCR text)
+   ========================================================= */
+
+const OPS_LIB_URLS = {
+  tesseract: "https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.0.4/tesseract.min.js"
+};
+let tesseractLoaded = false;
+function loadTesseract(){
+  return new Promise((resolve,reject)=>{
+    if(tesseractLoaded || window.Tesseract){ tesseractLoaded=true; return resolve(); }
+    const s = document.createElement('script');
+    s.src = OPS_LIB_URLS.tesseract;
+    s.onload = ()=>{ tesseractLoaded=true; resolve(); };
+    s.onerror = reject;
+    document.head.appendChild(s);
+  });
+}
+
+/* ---------- STATE ---------- */
+let DATA = { guides: [], runs: [], settings: {
+  ghToken:'', ghOwner:'', ghRepo:'', ghBranch:'main',
+  bridgeOwner:'', bridgeRepo:'', bridgeFolder:'comptes-rendus-en-attente', bridgeUrl:'',
+  notifyPending:true
+}};
+let ROUTE = { view:'home' };
+let PENDING_REPORTS = []; // fetched from bridge repo when configured
+
+const uid = () => 'id'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+
+async function loadData(){
+  try{
+    const r = await window.storage.get('mecaguide-data', false);
+    if(r && r.value) DATA = JSON.parse(r.value);
+  }catch(e){ /* first run, nothing stored yet */ }
+  if(!DATA.settings) DATA.settings = { ghToken:'', ghOwner:'', ghRepo:'', ghBranch:'main',
+    bridgeOwner:'', bridgeRepo:'', bridgeFolder:'comptes-rendus-en-attente', bridgeUrl:'', notifyPending:true };
+  if(!DATA.guides) DATA.guides = [];
+  if(!DATA.runs) DATA.runs = [];
+}
+async function saveData(){
+  try{ await window.storage.set('mecaguide-data', JSON.stringify(DATA), false); }
+  catch(e){ console.error('Erreur de sauvegarde', e); toast('Erreur de sauvegarde locale'); }
+}
+
+function guideStorageConfigured(){
+  const s = DATA.settings;
+  return !!(s.ghToken && s.ghOwner && s.ghRepo);
+}
+function bridgeConfigured(){
+  const s = DATA.settings;
+  return !!(s.ghToken && s.bridgeOwner && s.bridgeRepo);
+}
+
+/* ---------- GITHUB (Git Data API — robuste pour gros fichiers) ---------- */
+async function ghApi(path, opts={}){
+  const s = DATA.settings;
+  const res = await fetch(`https://api.github.com${path}`, {
+    ...opts,
+    headers:{
+      'Authorization': `Bearer ${s.ghToken}`,
+      'Accept':'application/vnd.github+json',
+      ...(opts.headers||{})
+    }
+  });
+  if(!res.ok){
+    const body = await res.text().catch(()=> '');
+    throw new Error(`GitHub API ${res.status} sur ${path} — ${body.slice(0,200)}`);
+  }
+  return res.json();
+}
+
+function arrayBufferToBase64(buffer){
+  let binary = '';
+  const bytes = new Uint8Array(buffer);
+  const chunk = 0x8000;
+  for(let i=0;i<bytes.length;i+=chunk){
+    binary += String.fromCharCode.apply(null, bytes.subarray(i, i+chunk));
+  }
+  return btoa(binary);
+}
+
+async function ghUploadFile(owner, repo, branch, path, arrayBuffer, message){
+  const s = DATA.settings;
+  const base64 = arrayBufferToBase64(arrayBuffer);
+  // 1. blob
+  const blob = await ghApi(`/repos/${owner}/${repo}/git/blobs`, {
+    method:'POST', body: JSON.stringify({ content: base64, encoding:'base64' })
+  });
+  // 2. ref -> commit -> tree
+  const ref = await ghApi(`/repos/${owner}/${repo}/git/ref/heads/${branch}`);
+  const baseCommit = await ghApi(`/repos/${owner}/${repo}/git/commits/${ref.object.sha}`);
+  const tree = await ghApi(`/repos/${owner}/${repo}/git/trees`, {
+    method:'POST', body: JSON.stringify({
+      base_tree: baseCommit.tree.sha,
+      tree: [{ path, mode:'100644', type:'blob', sha: blob.sha }]
+    })
+  });
+  // 3. commit + update ref
+  const commit = await ghApi(`/repos/${owner}/${repo}/git/commits`, {
+    method:'POST', body: JSON.stringify({
+      message, tree: tree.sha, parents: [ref.object.sha]
+    })
+  });
+  await ghApi(`/repos/${owner}/${repo}/git/refs/heads/${branch}`, {
+    method:'PATCH', body: JSON.stringify({ sha: commit.sha })
+  });
+  return `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${path}`;
+}
+
+async function ghUploadJSON(owner, repo, branch, path, obj, message){
+  const buf = new TextEncoder().encode(JSON.stringify(obj));
+  return ghUploadFile(owner, repo, branch, path, buf.buffer, message);
+}
+
+async function ghListFolder(owner, repo, path){
+  try{
+    return await ghApi(`/repos/${owner}/${repo}/contents/${path}`);
+  }catch(e){ return []; }
+}
+
+async function fetchPendingReports(){
+  if(!bridgeConfigured()) { PENDING_REPORTS = []; return; }
+  const s = DATA.settings;
+  try{
+    const items = await ghListFolder(s.bridgeOwner, s.bridgeRepo, s.bridgeFolder);
+    const files = (Array.isArray(items)?items:[]).filter(f=>f.name.endsWith('.json'));
+    const reports = [];
+    for(const f of files){
+      const r = await fetch(f.download_url);
+      const j = await r.json();
+      reports.push({ ...j, _path: f.path, _sha: f.sha });
+    }
+    PENDING_REPORTS = reports;
+  }catch(e){ console.error(e); }
+}
+
+/* ---------- UTIL: parse nom de fichier style Nissan "A_-_AA_-_TABLE.pdf" ---------- */
+function parseChapterFilename(filename){
+  const base = filename.replace(/\.pdf$/i,'');
+  const m = base.match(/^([A-Z]{1,3})[\s_-]+([A-Z0-9]{1,5})[\s_-]+(.+)$/i);
+  if(m){
+    return {
+      section: m[1].toUpperCase(),
+      code: m[2].toUpperCase(),
+      label: m[3].replace(/_/g,' ').trim()
+    };
+  }
+  return { section:'', code:'', label: base.replace(/_/g,' ').trim() };
+}
+
+/* ---------- TOAST ---------- */
+function toast(msg, ms=2600){
+  const el = document.createElement('div');
+  el.className='toast'; el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(), ms);
+}
+
+/* ---------- ROUTER / RENDER ---------- */
+function nav(route){ ROUTE = route; render(); window.scrollTo(0,0); }
+
+function render(){
+  const app = document.getElementById('app');
+  let html = '';
+  if(ROUTE.view==='home') html = renderHome();
+  else if(ROUTE.view==='guide') html = renderGuideDetail(ROUTE.id, ROUTE.tab||'chapitres');
+  else if(ROUTE.view==='addGuide') html = renderAddGuide();
+  else if(ROUTE.view==='addChapter') html = renderAddChapter(ROUTE.guideId);
+  else if(ROUTE.view==='reader') html = renderReaderShell(ROUTE.guideId, ROUTE.chapterId);
+  else if(ROUTE.view==='addProcedure') html = renderAddProcedure(ROUTE.guideId, ROUTE.procId||null);
+  else if(ROUTE.view==='procedures') html = renderProceduresPage();
+  else if(ROUTE.view==='run') html = renderRunProcedure(ROUTE.runId);
+  else if(ROUTE.view==='settings') html = renderSettings();
+  else if(ROUTE.view==='pending') html = renderPending();
+  app.innerHTML = html + (ROUTE.view==='reader' ? '' : renderBottomNav());
+  afterRender();
+}
+
+function renderBottomNav(){
+  const items = [
+    {v:'home', ic:'🏠', lbl:'Accueil'},
+    {v:'procedures', ic:'🧾', lbl:'Procédure'},
+    {v:'pending', ic:'📤', lbl:'Comptes-rendus'},
+    {v:'settings', ic:'⚙️', lbl:'Réglages'},
+  ];
+  return `<div class="bottomnav">${items.map(i=>`
+    <button class="navbtn ${ROUTE.view===i.v?'active':''}" data-nav="${i.v}">
+      <span class="ic">${i.ic}</span>${i.lbl}
+    </button>`).join('')}</div>`;
+}
+
+/* ---------- HOME ---------- */
+function renderHome(){
+  const guides = DATA.guides;
+  return `
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-logo">🔧</div>
+      <div class="brand-name">MecaGuide</div>
+    </div>
+    <button class="icon-btn" data-nav="addGuide">+</button>
+  </div>
+
+  ${guides.length===0 ? `
+    <div class="empty">
+      <div class="ic">📚</div>
+      <div class="t">Aucun guide pour l'instant</div>
+      <div class="s">Ajoute ton premier manuel d'atelier pour commencer.</div>
+    </div>` : guides.map(g=>`
+    <div class="list-row" data-nav="guide" data-id="${g.id}">
+      <div class="emoji">📘</div>
+      <div class="txt">
+        <div class="t">${esc(g.title)}</div>
+        <div class="s">${g.tags.join(' · ') || 'Sans tag'} · ${g.chapters.length} chapitre${g.chapters.length>1?'s':''}</div>
+      </div>
+      <div class="chev">›</div>
+    </div>`).join('')}
+
+  <div class="btn-row" style="margin-top:16px;">
+    <button class="btn btn-primary" data-nav="addGuide">+ Ajouter un guide</button>
+  </div>
+  `;
+}
+
+/* ---------- PROCÉDURES EN COURS ---------- */
+function runStatusLabel(run, p){
+  if(run.stepIndex==='tools') return 'Matériel non vérifié';
+  if(run.stepIndex==='report') return 'À finaliser (compte-rendu)';
+  const total = p ? p.steps.length : '?';
+  return `Étape ${(+run.stepIndex)+1} / ${total}`;
+}
+function runProgressPct(run, p){
+  if(!p || !p.steps.length) return 0;
+  if(run.stepIndex==='tools') return 0;
+  if(run.stepIndex==='report') return 100;
+  return Math.round(((+run.stepIndex+1)/p.steps.length)*100);
+}
+function renderProceduresPage(){
+  const runs = [...DATA.runs].sort((a,b)=> (b.updatedAt||0)-(a.updatedAt||0));
+  return `
+  <div class="topbar">
+    <h1 style="font-size:20px;">Procédures en cours</h1>
+    <div style="width:38px;"></div>
+  </div>
+  ${runs.length===0 ? `
+    <div class="empty">
+      <div class="ic">🧾</div>
+      <div class="t">Aucune procédure en cours</div>
+      <div class="s">Lance une intervention depuis l'onglet Procédures d'un guide — tu pourras la mettre
+      en pause et la reprendre ici quand tu veux.</div>
+    </div>` : runs.map(run=>{
+      const g = DATA.guides.find(x=>x.id===run.guideId);
+      const p = g && g.procedures.find(x=>x.id===run.procId);
+      if(!g || !p) return '';
+      return `
+      <div class="list-row" data-resumerun="${run.id}">
+        <div class="emoji">🧾</div>
+        <div class="txt">
+          <div class="t">${esc(p.title)}</div>
+          <div class="s">${esc(g.title)} · ${runStatusLabel(run,p)}</div>
+          <div class="progress-track" style="margin:6px 0 0;"><div class="progress-fill" style="width:${runProgressPct(run,p)}%"></div></div>
+        </div>
+        <button class="del" data-abandonrun="${run.id}" style="background:none;border:none;color:var(--ink-dim);font-size:16px;cursor:pointer;">🗑</button>
+      </div>`;
+    }).join('')}
+  `;
+}
+function wireProceduresPage(){
+  document.querySelectorAll('[data-resumerun]').forEach(el=>{
+    el.addEventListener('click', (e)=>{
+      if(e.target.closest('[data-abandonrun]')) return;
+      nav({view:'run', runId: el.dataset.resumerun});
+    });
+  });
+  document.querySelectorAll('[data-abandonrun]').forEach(el=>{
+    el.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      if(confirm('Abandonner cette procédure en cours ? Sa progression sera perdue.')){
+        DATA.runs = DATA.runs.filter(r=>r.id!==el.dataset.abandonrun);
+        saveData(); render();
+      }
+    });
+  });
+}
+
+/* ---------- ADD GUIDE ---------- */
+function renderAddGuide(){
+  return `
+  <div class="topbar">
+    <button class="icon-btn" data-nav="home">←</button>
+    <h1 style="font-size:17px;">Nouveau guide</h1>
+    <div style="width:38px;"></div>
+  </div>
+  <div class="field">
+    <label>Titre du guide</label>
+    <input id="ngTitle" placeholder="Ex : Manuel d'atelier Pathfinder R51">
+  </div>
+  <div class="field">
+    <label>Tags (modèle / motorisation)</label>
+    <div class="tag-input-row">
+      <input id="ngTagInput" placeholder="Ex : Pathfinder R51">
+      <button class="btn btn-ghost btn-sm" id="ngAddTag">Ajouter</button>
+    </div>
+    <div id="ngTags" class="px" style="padding:0;"></div>
+  </div>
+  ${!guideStorageConfigured() ? `<div class="banner-warn">
+    ⚠️ Le stockage GitHub n'est pas configuré (Réglages). Sans ça, tes PDF ne pourront pas être ajoutés —
+    seul le guide vide sera créé pour l'instant.
+  </div>` : ''}
+  <div class="btn-row">
+    <button class="btn btn-primary" id="ngCreate">Créer le guide</button>
+  </div>
+  `;
+}
+let ngTagsBuffer = [];
+function renderNgTags(){
+  document.getElementById('ngTags').innerHTML = ngTagsBuffer.map((t,i)=>
+    `<span class="tag">${esc(t)}<button data-rmtag="${i}">✕</button></span>`).join('');
+}
+
+/* ---------- GUIDE DETAIL ---------- */
+function renderGuideDetail(guideId, tab){
+  const g = DATA.guides.find(x=>x.id===guideId);
+  if(!g) return `<div class="empty">Guide introuvable.</div>`;
+  return `
+  <div class="topbar">
+    <button class="icon-btn" data-nav="home">←</button>
+    <h1 style="font-size:16px;flex:1;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(g.title)}</h1>
+    <button class="icon-btn" data-delguide="${g.id}">🗑</button>
+  </div>
+  <div class="px" style="margin-bottom:10px;">${g.tags.map(t=>`<span class="tag" style="cursor:default;">${esc(t)}</span>`).join('')}</div>
+
+  <div class="tabs">
+    <button class="tab ${tab==='chapitres'?'active':''}" data-navtab="chapitres" data-gid="${g.id}">Chapitres (${g.chapters.length})</button>
+    <button class="tab ${tab==='procedures'?'active':''}" data-navtab="procedures" data-gid="${g.id}">Procédures (${g.procedures.length})</button>
+  </div>
+
+  ${tab==='chapitres' ? renderChaptersTab(g) : renderProceduresTab(g)}
+  `;
+}
+
+function renderChaptersTab(g){
+  const sorted = [...g.chapters].sort((a,b)=> (a.section+a.code).localeCompare(b.section+b.code));
+  return `
+  ${sorted.length===0 ? `
+    <div class="empty">
+      <div class="ic">📄</div>
+      <div class="t">Aucun chapitre</div>
+      <div class="s">Ajoute les PDF qui composent ce guide.</div>
+    </div>` : sorted.map(c=>`
+    <div class="list-row" data-openchapter="${c.id}" data-gid="${g.id}">
+      <div class="emoji">📄</div>
+      <div class="txt">
+        <div class="t">${c.section ? `${c.section} — ${c.code} — ` : ''}${esc(c.label)}</div>
+        <div class="s">${c.uploaded ? (c.ocrDone ? 'Indexé pour la recherche' : 'PDF en ligne · OCR non fait') : 'Non uploadé'}</div>
+      </div>
+      <div class="chev">›</div>
+    </div>`).join('')}
+  <div class="btn-row" style="margin-top:10px;">
+    <button class="btn btn-primary" data-navobj='{"view":"addChapter","guideId":"${g.id}"}'>+ Ajouter un chapitre</button>
+  </div>
+  `;
+}
+
+function renderProceduresTab(g){
+  return `
+  ${g.procedures.length===0 ? `
+    <div class="empty">
+      <div class="ic">🧾</div>
+      <div class="t">Aucune procédure</div>
+      <div class="s">Crée une intervention pas-à-pas basée sur ce guide.</div>
+    </div>` : g.procedures.map(p=>`
+    <div class="list-row" data-startrun="${p.id}" data-gid="${g.id}">
+      <div class="emoji">🧾</div>
+      <div class="txt">
+        <div class="t">${esc(p.title)}</div>
+        <div class="s">${p.steps.length} étape${p.steps.length>1?'s':''} · ${p.tools.length} outil${p.tools.length>1?'s':''}</div>
+      </div>
+      <div class="chev">›</div>
+    </div>`).join('')}
+  <div class="btn-row" style="margin-top:10px;">
+    <button class="btn btn-primary" data-navobj='{"view":"addProcedure","guideId":"${g.id}"}'>+ Créer une procédure</button>
+  </div>
+  `;
+}
+
+/* ---------- ADD CHAPTER ---------- */
+function renderAddChapter(guideId){
+  const g = DATA.guides.find(x=>x.id===guideId);
+  return `
+  <div class="topbar">
+    <button class="icon-btn" data-navobj='{"view":"guide","id":"${guideId}","tab":"chapitres"}'>←</button>
+    <h1 style="font-size:17px;">Ajouter un chapitre</h1>
+    <div style="width:38px;"></div>
+  </div>
+  ${!guideStorageConfigured() ? `<div class="banner-warn">
+    ⚠️ Stockage GitHub non configuré — configure-le dans Réglages avant d'ajouter un PDF.
+  </div>` : `<div class="banner-info">
+    Le nom du fichier sera analysé automatiquement (format Nissan "A_-_AA_-_Nom.pdf"). Sinon, tu pourras
+    corriger le libellé à la main juste après.
+  </div>`}
+  <div class="field">
+    <label>Fichier PDF</label>
+    <input type="file" id="chapFile" accept="application/pdf" ${!guideStorageConfigured()?'disabled':''}>
+  </div>
+  <div id="chapPreview"></div>
+  <div class="btn-row">
+    <button class="btn btn-primary" id="chapUploadBtn" disabled>Analyser et uploader</button>
+  </div>
+  `;
+}
+
+/* ---------- READER SHELL ---------- */
+function renderReaderShell(guideId, chapterId){
+  const g = DATA.guides.find(x=>x.id===guideId);
+  const c = g && g.chapters.find(x=>x.id===chapterId);
+  return `
+  <div class="reader-topbar">
+    <button class="icon-btn" data-navobj='{"view":"guide","id":"${guideId}","tab":"chapitres"}'>←</button>
+    <div class="title">${c ? esc(c.label) : ''}</div>
+    <button class="icon-btn" id="readerSearchBtn">🔎</button>
+  </div>
+  <div id="readerSearchBar" style="display:none;padding:10px 14px;border-bottom:1px solid var(--line);">
+    <input id="readerSearchInput" placeholder="Chercher un mot dans ce guide..."
+      style="width:100%;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px;color:var(--ink);">
+    <div id="readerSearchResults" style="margin-top:8px;max-height:180px;overflow-y:auto;"></div>
+  </div>
+  <div class="reader-canvas-wrap" id="readerCanvasWrap">
+    <div style="color:var(--ink-dim);padding:60px 20px;text-align:center;">
+      <div class="spinner"></div> Chargement du PDF…
+    </div>
+  </div>
+  <div class="reader-controls">
+    <button id="pgPrev">‹</button>
+    <div class="pageinfo" id="pgInfo">– / –</div>
+    <button id="pgNext">›</button>
+    <button id="ocrBtn" title="Indexer pour la recherche">🔍 OCR</button>
+  </div>
+  `;
+}
+
+/* ---------- ADD PROCEDURE ---------- */
+let procBuffer = null;
+function renderAddProcedure(guideId, procId){
+  const g = DATA.guides.find(x=>x.id===guideId);
+  if(!procBuffer || procBuffer._guideId!==guideId || procBuffer._procId!==procId){
+    const existing = procId ? g.procedures.find(p=>p.id===procId) : null;
+    procBuffer = existing ? JSON.parse(JSON.stringify(existing)) : { title:'', tools:[], steps:[] };
+    procBuffer._guideId = guideId; procBuffer._procId = procId;
+  }
+  const chapters = g.chapters;
+  return `
+  <div class="topbar">
+    <button class="icon-btn" data-navobj='{"view":"guide","id":"${guideId}","tab":"procedures"}'>←</button>
+    <h1 style="font-size:17px;">${procId?'Modifier':'Nouvelle'} procédure</h1>
+    <div style="width:38px;"></div>
+  </div>
+  <div class="field">
+    <label>Titre de l'intervention</label>
+    <input id="pTitle" value="${esc(procBuffer.title)}" placeholder="Ex : Vidange huile moteur">
+  </div>
+
+  <div class="field">
+    <label>Matériel nécessaire</label>
+    <div class="tag-input-row">
+      <input id="pToolInput" placeholder="Ex : Clé à cliquet 13mm">
+      <button class="btn btn-ghost btn-sm" id="pAddTool">Ajouter</button>
+    </div>
+    <div id="pTools"></div>
+  </div>
+
+  <div class="field">
+    <label>Étapes</label>
+    <div id="pSteps"></div>
+    <div class="card" style="margin-top:8px;">
+      <div style="display:grid;gap:8px;">
+        <input id="pStepTitle" placeholder="Titre de l'étape (ex: Retirer l'étrier de frein)">
+        <select id="pStepChapter">
+          <option value="">— Chapitre de référence (optionnel) —</option>
+          ${chapters.map(c=>`<option value="${c.id}">${esc(c.label)}</option>`).join('')}
+        </select>
+        <input id="pStepPage" type="number" min="1" placeholder="N° de page (optionnel)">
+        <textarea id="pStepNote" placeholder="Note libre pour cette étape (optionnel)"></textarea>
+        <button class="btn btn-secondary" id="pAddStep">+ Ajouter cette étape</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-primary" id="pSave">Enregistrer la procédure</button>
+  </div>
+  `;
+}
+function renderPTools(){
+  document.getElementById('pTools').innerHTML = procBuffer.tools.map((t,i)=>
+    `<span class="tag">${esc(t)}<button data-rmtool="${i}">✕</button></span>`).join('') || `<div class="hint">Aucun outil ajouté.</div>`;
+}
+function renderPSteps(){
+  const g = DATA.guides.find(x=>x.id===procBuffer._guideId);
+  document.getElementById('pSteps').innerHTML = procBuffer.steps.length===0 ? `<div class="hint">Aucune étape pour l'instant.</div>` :
+    procBuffer.steps.map((s,i)=>{
+      const chap = g.chapters.find(c=>c.id===s.chapterId);
+      return `<div class="step-list-item">
+        <div class="num">${i+1}</div>
+        <div class="txt">${esc(s.title)}${chap?` · ${esc(chap.label)}${s.page?` p.${s.page}`:''}`:''}</div>
+        <button class="del" data-rmstep="${i}">✕</button>
+      </div>`;
+    }).join('');
+}
+
+/* ---------- RUN PROCEDURE (persisté via DATA.runs — pause/reprise, plusieurs en parallèle) ---------- */
+function getRun(runId){
+  const run = DATA.runs.find(r=>r.id===runId);
+  if(!run) return null;
+  const g = DATA.guides.find(x=>x.id===run.guideId);
+  const p = g && g.procedures.find(x=>x.id===run.procId);
+  if(!g || !p) return null;
+  return { run, g, p };
+}
+async function updateRun(runId, patch){
+  const run = DATA.runs.find(r=>r.id===runId);
+  if(!run) return;
+  Object.assign(run, patch, { updatedAt: Date.now() });
+  await saveData();
+}
+
+function renderRunProcedure(runId){
+  const ctx = getRun(runId);
+  if(!ctx) return `<div class="empty"><div class="t">Procédure introuvable.</div>
+    <div class="s">Elle a peut-être été abandonnée ou supprimée.</div></div>`;
+  const { run, g, p } = ctx;
+
+  if(run.stepIndex === 'tools') return renderToolsChecklist(run, g, p);
+  if(run.stepIndex === 'report') return renderReportForm(run, g, p);
+
+  const stepIdx = +run.stepIndex;
+  const step = p.steps[stepIdx];
+  const pct = p.steps.length ? Math.round(((stepIdx+1)/p.steps.length)*100) : 0;
+  const chap = step && step.chapterId ? g.chapters.find(c=>c.id===step.chapterId) : null;
+  return `
+  <div class="topbar">
+    <button class="icon-btn" data-pauserun="${run.id}" title="Mettre en pause">✕</button>
+    <h1 style="font-size:15px;flex:1;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(p.title)}</h1>
+    <div style="width:38px;"></div>
+  </div>
+  <div class="px" style="display:flex;justify-content:space-between;font-size:12px;color:var(--ink-dim);margin-bottom:6px;">
+    <span>Étape ${stepIdx+1} / ${p.steps.length}</span><span>${pct}%</span>
+  </div>
+  <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
+
+  <div class="step-media" id="stepMedia">
+    ${chap ? `<div class="ph">Chargement du schéma…</div>` : `<div class="ph">Pas de schéma associé à cette étape.</div>`}
+  </div>
+
+  <div class="px">
+    <h2 style="font-size:17px;margin-bottom:8px;">${esc(step.title)}</h2>
+    ${step.note ? `<div class="tip-card"><span class="ic">💡</span><span class="t">${esc(step.note)}</span></div>` : ''}
+  </div>
+
+  <div class="btn-row" style="margin-top:6px;">
+    <button class="btn btn-secondary" data-gotostep="${run.id}" data-step="${stepIdx>0?stepIdx-1:'tools'}">Précédent</button>
+    <button class="btn btn-primary" data-gotostep="${run.id}" data-step="${stepIdx<p.steps.length-1?stepIdx+1:'report'}">
+      ${stepIdx<p.steps.length-1?'Suivant':'Terminer'}
+    </button>
+  </div>
+  <div class="btn-row" style="margin-top:10px;">
+    <button class="btn btn-secondary" data-pauserun="${run.id}">Mettre en pause — reprendre plus tard</button>
+  </div>
+  `;
+}
+
+function renderToolsChecklist(run, g, p){
+  return `
+  <div class="topbar">
+    <button class="icon-btn" data-pauserun="${run.id}" title="Mettre en pause">✕</button>
+    <h1 style="font-size:15px;">${esc(p.title)}</h1>
+    <div style="width:38px;"></div>
+  </div>
+  <div class="section-title" style="margin-top:8px;">Matériel nécessaire</div>
+  ${p.tools.length===0 ? `<div class="empty"><div class="s">Aucun outil listé pour cette procédure.</div></div>` :
+    p.tools.map((t,i)=>`
+    <label class="checklist-item">
+      <input type="checkbox" data-toolcheck="${run.id}:${i}" ${run.toolsChecked[i]?'checked':''}>
+      <div class="lbl">${esc(t)}</div>
+    </label>`).join('')}
+  ${p.tools.some((t,i)=>!run.toolsChecked[i]) ? `<div class="banner-warn">
+    Il te manque du matériel coché ci-dessus ? Mets la procédure en pause, tu la retrouveras
+    dans l'onglet Procédure quand tu seras prêt.</div>` : ''}
+  <div class="btn-row" style="margin-top:16px;">
+    <button class="btn btn-secondary" data-pauserun="${run.id}">Mettre en pause</button>
+    <button class="btn btn-primary" data-gotostep="${run.id}" data-step="0">Commencer l'intervention</button>
+  </div>
+  `;
+}
+
+function renderReportForm(run, g, p){
+  return `
+  <div class="topbar">
+    <button class="icon-btn" data-pauserun="${run.id}">✕</button>
+    <h1 style="font-size:15px;">Fin d'intervention</h1>
+    <div style="width:38px;"></div>
+  </div>
+  <div class="card px" style="margin:0 18px 16px;">
+    <h2 style="font-size:16px;margin-bottom:4px;">Remplir un compte-rendu ?</h2>
+    <div class="hint" style="margin-bottom:14px;">Tu peux aussi passer directement — rien ne sera enregistré.</div>
+    <div class="btn-row" style="padding:0;">
+      <button class="btn btn-secondary" data-finishrun="${run.id}">Non, terminer</button>
+      <button class="btn btn-primary" id="showReportForm">Oui, remplir</button>
+    </div>
+  </div>
+  <div id="reportFormBody" style="display:none;">
+    <div class="field"><label>Véhicule concerné</label><input id="rVehicule" placeholder="Ex : Pathfinder R51"></div>
+    <div class="field"><label>Kilométrage</label><input id="rKm" type="number" placeholder="Ex : 263000"></div>
+    <div class="field"><label>Description de l'intervention</label>
+      <textarea id="rDesc">${esc(p.title)}</textarea></div>
+    <div class="field"><label>Note (optionnel — ira dans les notes du véhicule si envoyée vers PitStop)</label>
+      <textarea id="rNote" placeholder="Ex : à recontrôler dans 5000 km"></textarea></div>
+
+    <div class="section-title">Exporter vers</div>
+    <div class="btn-row" style="flex-direction:column;gap:8px;">
+      <button class="btn btn-ghost" id="exportPitstop" data-run="${run.id}" ${!bridgeConfigured()?'disabled':''}>
+        📤 Vers PitStop ${!bridgeConfigured()?'(non configuré)':''}
+      </button>
+      <button class="btn btn-ghost" id="exportPdf">📄 Générer un PDF</button>
+      <button class="btn btn-ghost" id="exportPrint">🖨️ Imprimer</button>
+    </div>
+  </div>
+  `;
+}
+
+/* ---------- PENDING (comptes-rendus côté MecaGuide — pour suivi, optionnel) ---------- */
+function renderPending(){
+  return `
+  <div class="topbar"><h1 style="font-size:20px;">Comptes-rendus</h1><div></div></div>
+  ${!bridgeConfigured() ? `<div class="banner-warn">
+    Le pont vers PitStop n'est pas configuré. Configure-le dans Réglages pour suivre l'état de tes comptes-rendus déposés.
+  </div>` : `<div class="banner-info">Les comptes-rendus déposés sont visibles et validés depuis l'app PitStop.
+    Cette page confirme juste ce que MecaGuide a envoyé.</div>`}
+  <div id="pendingList" class="px"><div class="hint">…</div></div>
+  `;
+}
+
+/* ---------- SETTINGS ---------- */
+function renderSettings(){
+  const s = DATA.settings;
+  return `
+  <div class="topbar">
+    <button class="icon-btn" data-nav="home">←</button>
+    <h1 style="font-size:17px;">Réglages</h1>
+    <div style="width:38px;"></div>
+  </div>
+
+  <div class="section-title">Stockage des guides (obligatoire)</div>
+  <div class="field"><label>Token GitHub</label><input id="stGhToken" type="password" value="${esc(s.ghToken)}" placeholder="ghp_..."></div>
+  <div class="field"><label>Propriétaire du repo</label><input id="stGhOwner" value="${esc(s.ghOwner)}" placeholder="ex: maxusername"></div>
+  <div class="field"><label>Nom du repo (privé)</label><input id="stGhRepo" value="${esc(s.ghRepo)}" placeholder="ex: mecaguide-data"></div>
+  <div class="field"><label>Branche</label><input id="stGhBranch" value="${esc(s.ghBranch||'main')}" placeholder="main"></div>
+
+  <div class="section-title">Pont vers PitStop (optionnel)</div>
+  <div class="field"><label>Propriétaire du repo de sauvegarde PitStop</label><input id="stBrOwner" value="${esc(s.bridgeOwner)}"></div>
+  <div class="field"><label>Nom du repo de sauvegarde PitStop</label><input id="stBrRepo" value="${esc(s.bridgeRepo)}"></div>
+  <div class="field"><label>Dossier des comptes-rendus</label><input id="stBrFolder" value="${esc(s.bridgeFolder||'comptes-rendus-en-attente')}"></div>
+  <div class="field"><label class="hint" style="text-transform:none;letter-spacing:0;">Réutilise le même token GitHub que ci-dessus.</label></div>
+
+  <div class="toggle-row">
+    <div>Notifications comptes-rendus en attente</div>
+    <div class="switch ${s.notifyPending?'on':''}" id="notifToggle"><div class="dot"></div></div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-primary" id="saveSettings">Enregistrer</button>
+  </div>
+  <div style="text-align:center;color:var(--ink-dim);font-size:11.5px;margin-top:18px;">MecaGuide v1.0.0</div>
+  `;
+}
+
+/* ---------- HELPERS ---------- */
+function esc(str){
+  return String(str==null?'':str).replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+/* ---------- EVENT WIRING ---------- */
+function afterRender(){
+  document.querySelectorAll('[data-nav]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const v = el.getAttribute('data-nav');
+      const id = el.getAttribute('data-id');
+      if(v==='guide' && id) nav({view:'guide', id, tab:'chapitres'});
+      else nav({view:v});
+    });
+  });
+  document.querySelectorAll('[data-navobj]').forEach(el=>{
+    el.addEventListener('click', ()=> nav(JSON.parse(el.getAttribute('data-navobj'))));
+  });
+  document.querySelectorAll('[data-navtab]').forEach(el=>{
+    el.addEventListener('click', ()=> nav({view:'guide', id:el.dataset.gid, tab:el.dataset.navtab}));
+  });
+  document.querySelectorAll('[data-openchapter]').forEach(el=>{
+    el.addEventListener('click', ()=> nav({view:'reader', guideId:el.dataset.gid, chapterId:el.dataset.openchapter}));
+  });
+  document.querySelectorAll('[data-startrun]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const run = { id:uid(), guideId:el.dataset.gid, procId:el.dataset.startrun,
+        stepIndex:'tools', toolsChecked:{}, startedAt:Date.now(), updatedAt:Date.now() };
+      DATA.runs.push(run);
+      saveData();
+      nav({view:'run', runId: run.id});
+    });
+  });
+  document.querySelectorAll('[data-delguide]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      if(confirm('Supprimer ce guide et toutes ses procédures ? (les fichiers restent sur GitHub)')){
+        DATA.guides = DATA.guides.filter(g=>g.id!==el.dataset.delguide);
+        DATA.runs = (DATA.runs||[]).filter(r=>r.guideId!==el.dataset.delguide);
+        saveData(); nav({view:'home'});
+      }
+    });
+  });
+
+  if(ROUTE.view==='addGuide') wireAddGuide();
+  if(ROUTE.view==='addChapter') wireAddChapter();
+  if(ROUTE.view==='reader') wireReader();
+  if(ROUTE.view==='addProcedure') wireAddProcedure();
+  if(ROUTE.view==='procedures') wireProceduresPage();
+  if(ROUTE.view==='run') wireRunProcedure();
+  if(ROUTE.view==='settings') wireSettings();
+  if(ROUTE.view==='pending') wirePending();
+}
+
+/* ---- Add Guide ---- */
+function wireAddGuide(){
+  ngTagsBuffer = [];
+  renderNgTags();
+  document.getElementById('ngAddTag').addEventListener('click', ()=>{
+    const v = document.getElementById('ngTagInput').value.trim();
+    if(v){ ngTagsBuffer.push(v); document.getElementById('ngTagInput').value=''; renderNgTags();
+      document.querySelectorAll('[data-rmtag]').forEach(b=>b.addEventListener('click', ()=>{
+        ngTagsBuffer.splice(+b.dataset.rmtag,1); renderNgTags();
+      }));
+    }
+  });
+  document.getElementById('ngCreate').addEventListener('click', async ()=>{
+    const title = document.getElementById('ngTitle').value.trim();
+    if(!title){ toast('Indique un titre.'); return; }
+    const g = { id:uid(), title, tags:[...ngTagsBuffer], chapters:[], procedures:[], createdAt:Date.now() };
+    DATA.guides.push(g);
+    await saveData();
+    nav({view:'guide', id:g.id, tab:'chapitres'});
+  });
+}
+
+/* ---- Add Chapter ---- */
+let pendingChapterFile = null;
+function wireAddChapter(){
+  const fileInput = document.getElementById('chapFile');
+  if(!fileInput) return;
+  fileInput.addEventListener('change', (e)=>{
+    const f = e.target.files[0];
+    if(!f) return;
+    pendingChapterFile = f;
+    const parsed = parseChapterFilename(f.name);
+    document.getElementById('chapPreview').innerHTML = `
+      <div class="field"><label>Section</label><input id="cSection" value="${esc(parsed.section)}"></div>
+      <div class="field"><label>Code</label><input id="cCode" value="${esc(parsed.code)}"></div>
+      <div class="field"><label>Libellé</label><input id="cLabel" value="${esc(parsed.label)}"></div>
+      <div class="hint px">${(f.size/1024/1024).toFixed(1)} Mo</div>
+    `;
+    document.getElementById('chapUploadBtn').disabled = false;
+  });
+  document.getElementById('chapUploadBtn').addEventListener('click', async ()=>{
+    if(!pendingChapterFile) return;
+    const btn = document.getElementById('chapUploadBtn');
+    btn.disabled = true; btn.innerHTML = `<span class="spinner"></span> Upload en cours…`;
+    try{
+      const buf = await pendingChapterFile.arrayBuffer();
+      const s = DATA.settings;
+      const path = `guides/${ROUTE.guideId}/${Date.now()}-${pendingChapterFile.name}`;
+      const url = await ghUploadFile(s.ghOwner, s.ghRepo, s.ghBranch||'main', path, buf, `Ajout chapitre: ${pendingChapterFile.name}`);
+      const g = DATA.guides.find(x=>x.id===ROUTE.guideId);
+      g.chapters.push({
+        id: uid(),
+        section: document.getElementById('cSection').value.trim().toUpperCase(),
+        code: document.getElementById('cCode').value.trim().toUpperCase(),
+        label: document.getElementById('cLabel').value.trim(),
+        githubUrl: url, uploaded:true, ocrDone:false
+      });
+      await saveData();
+      toast('Chapitre ajouté ✓');
+      nav({view:'guide', id:ROUTE.guideId, tab:'chapitres'});
+    }catch(err){
+      console.error(err);
+      toast('Échec de l\'upload — vérifie ta config GitHub dans Réglages.');
+      btn.disabled=false; btn.textContent='Analyser et uploader';
+    }
+  });
+}
+
+/* ---- PDF READER ---- */
+let readerState = { pdf:null, pageNum:1, scale:1.4, hotspots:[], chapter:null, guide:null, ocrPages:null };
+async function wireReader(){
+  const g = DATA.guides.find(x=>x.id===ROUTE.guideId);
+  const c = g && g.chapters.find(x=>x.id===ROUTE.chapterId);
+  readerState = { pdf:null, pageNum:1, scale:1.4, hotspots:[], chapter:c, guide:g, ocrPages:null };
+  if(!c || !c.githubUrl){
+    document.getElementById('readerCanvasWrap').innerHTML = `<div class="hint" style="padding:40px;">PDF introuvable.</div>`;
+    return;
+  }
+  try{
+    const loadingTask = pdfjsLib.getDocument(c.githubUrl);
+    readerState.pdf = await loadingTask.promise;
+    await renderReaderPage(1);
+  }catch(err){
+    console.error(err);
+    document.getElementById('readerCanvasWrap').innerHTML = `<div class="hint" style="padding:40px;">
+      Impossible de charger le PDF (réseau ou lien invalide).</div>`;
+  }
+
+  document.getElementById('pgPrev').addEventListener('click', ()=>{
+    if(readerState.pageNum>1) renderReaderPage(readerState.pageNum-1);
+  });
+  document.getElementById('pgNext').addEventListener('click', ()=>{
+    if(readerState.pdf && readerState.pageNum<readerState.pdf.numPages) renderReaderPage(readerState.pageNum+1);
+  });
+  document.getElementById('ocrBtn').addEventListener('click', runOcrOnChapter);
+  document.getElementById('readerSearchBtn').addEventListener('click', ()=>{
+    const bar = document.getElementById('readerSearchBar');
+    bar.style.display = bar.style.display==='none' ? 'block' : 'none';
+  });
+  document.getElementById('readerSearchInput').addEventListener('input', doReaderSearch);
+
+  // charge l'index OCR déjà fait, si présent
+  try{
+    const r = await window.storage.get(`mecaguide-ocr-${c.id}`, false);
+    if(r && r.value) readerState.ocrPages = JSON.parse(r.value);
+  }catch(e){ /* pas encore indexé */ }
+}
+
+async function renderReaderPage(num){
+  readerState.pageNum = num;
+  const page = await readerState.pdf.getPage(num);
+  const viewport = page.getViewport({ scale: readerState.scale });
+  const wrap = document.getElementById('readerCanvasWrap');
+  wrap.innerHTML = '';
+  const container = document.createElement('div');
+  container.style.position='relative';
+  const canvas = document.createElement('canvas');
+  canvas.width = viewport.width; canvas.height = viewport.height;
+  container.appendChild(canvas);
+  wrap.appendChild(container);
+  const ctx = canvas.getContext('2d');
+  await page.render({ canvasContext: ctx, viewport }).promise;
+
+  // détection des hotspots image (crop depuis le rendu haute résolution)
+  try{
+    const hotspots = await computeImageHotspots(page, viewport);
+    hotspots.forEach(h=>{
+      const div = document.createElement('div');
+      div.className='hotspot';
+      div.style.left=h.left+'px'; div.style.top=h.top+'px';
+      div.style.width=h.width+'px'; div.style.height=h.height+'px';
+      div.addEventListener('click', ()=> openHotspotFullscreen(canvas, h));
+      container.appendChild(div);
+    });
+  }catch(e){ console.warn('Détection image impossible sur cette page', e); }
+
+  document.getElementById('pgInfo').textContent = `${num} / ${readerState.pdf.numPages}`;
+}
+
+async function computeImageHotspots(page, viewport){
+  const opList = await page.getOperatorList();
+  const OPS = pdfjsLib.OPS;
+  let ctm = [1,0,0,1,0,0];
+  const stack = [];
+  const hotspots = [];
+  const mul = (a,b)=>[
+    a[0]*b[0]+a[2]*b[1], a[1]*b[0]+a[3]*b[1],
+    a[0]*b[2]+a[2]*b[3], a[1]*b[2]+a[3]*b[3],
+    a[0]*b[4]+a[2]*b[5]+a[4], a[1]*b[4]+a[3]*b[5]+a[5]
+  ];
+  for(let i=0;i<opList.fnArray.length;i++){
+    const fn = opList.fnArray[i], args = opList.argsArray[i];
+    if(fn===OPS.save) stack.push(ctm);
+    else if(fn===OPS.restore) ctm = stack.pop()||ctm;
+    else if(fn===OPS.transform) ctm = mul(ctm,args);
+    else if(fn===OPS.paintImageXObject || fn===OPS.paintImageXObjectRepeat){
+      const corners = [[0,0],[1,0],[1,1],[0,1]].map(([x,y])=>{
+        const px = ctm[0]*x+ctm[2]*y+ctm[4], py = ctm[1]*x+ctm[3]*y+ctm[5];
+        const t = viewport.transform;
+        return [ t[0]*px+t[2]*py+t[4], t[1]*px+t[3]*py+t[5] ];
+      });
+      const xs=corners.map(c=>c[0]), ys=corners.map(c=>c[1]);
+      const w = Math.max(...xs)-Math.min(...xs), h = Math.max(...ys)-Math.min(...ys);
+      if(w>25 && h>25){ // ignore les micros-images (puces, icônes de couple...)
+        hotspots.push({ left:Math.min(...xs), top:Math.min(...ys), width:w, height:h });
+      }
+    }
+  }
+  return hotspots;
+}
+
+function openHotspotFullscreen(sourceCanvas, h){
+  const cropCanvas = document.createElement('canvas');
+  const scaleFactor = 2.2; // sur-échantillonnage pour un crop plus net
+  cropCanvas.width = h.width*scaleFactor; cropCanvas.height = h.height*scaleFactor;
+  const ctx = cropCanvas.getContext('2d');
+  ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality='high';
+  ctx.drawImage(sourceCanvas, h.left, h.top, h.width, h.height, 0, 0, cropCanvas.width, cropCanvas.height);
+  const overlay = document.createElement('div');
+  overlay.className='fullscreen-img';
+  const img = document.createElement('img');
+  img.src = cropCanvas.toDataURL('image/png');
+  img.style.maxWidth='100%';
+  overlay.appendChild(img);
+  const closeBtn = document.createElement('button');
+  closeBtn.className='fs-close'; closeBtn.textContent='✕';
+  closeBtn.addEventListener('click', ()=>overlay.remove());
+  document.body.appendChild(overlay);
+  document.body.appendChild(closeBtn);
+  overlay.addEventListener('click', (e)=>{ if(e.target===overlay){ overlay.remove(); closeBtn.remove(); } });
+  closeBtn.addEventListener('click', ()=>{ overlay.remove(); closeBtn.remove(); });
+}
+
+async function runOcrOnChapter(){
+  const btn = document.getElementById('ocrBtn');
+  btn.innerHTML = '<span class="spinner"></span>';
+  toast('Chargement du moteur OCR…');
+  try{
+    await loadTesseract();
+    const worker = await Tesseract.createWorker('fra');
+    const pages = [];
+    const total = readerState.pdf.numPages;
+    for(let i=1;i<=total;i++){
+      toast(`OCR page ${i}/${total}…`, 1500);
+      const page = await readerState.pdf.getPage(i);
+      const viewport = page.getViewport({ scale: 2 });
+      const canvas = document.createElement('canvas');
+      canvas.width = viewport.width; canvas.height = viewport.height;
+      await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+      const { data:{ text } } = await worker.recognize(canvas);
+      pages.push(text);
+    }
+    await worker.terminate();
+    await window.storage.set(`mecaguide-ocr-${readerState.chapter.id}`, JSON.stringify(pages), false);
+    readerState.chapter.ocrDone = true;
+    await saveData();
+    readerState.ocrPages = pages;
+    toast('Chapitre indexé pour la recherche ✓');
+  }catch(err){
+    console.error(err);
+    toast('Échec de l\'OCR.');
+  }
+  btn.textContent = '🔍 OCR';
+}
+
+function doReaderSearch(e){
+  const q = e.target.value.trim().toLowerCase();
+  const results = document.getElementById('readerSearchResults');
+  if(!q || !readerState.ocrPages){
+    results.innerHTML = readerState.ocrPages ? '' : `<div class="hint">Ce chapitre n'est pas encore indexé — touche 🔍 OCR.</div>`;
+    return;
+  }
+  const hits = [];
+  readerState.ocrPages.forEach((text,i)=>{
+    if(text.toLowerCase().includes(q)) hits.push(i+1);
+  });
+  results.innerHTML = hits.length===0 ? `<div class="hint">Aucun résultat.</div>` :
+    hits.map(p=>`<div class="list-row" style="margin:0 0 6px;" data-goto="${p}">
+      <div class="txt"><div class="t">Page ${p}</div></div><div class="chev">›</div>
+    </div>`).join('');
+  results.querySelectorAll('[data-goto]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      renderReaderPage(+el.dataset.goto);
+      document.getElementById('readerSearchBar').style.display='none';
+    });
+  });
+}
+
+/* ---- Add Procedure ---- */
+function wireAddProcedure(){
+  renderPTools(); renderPSteps();
+  document.getElementById('pAddTool').addEventListener('click', ()=>{
+    const v = document.getElementById('pToolInput').value.trim();
+    if(v){ procBuffer.tools.push(v); document.getElementById('pToolInput').value=''; renderPTools(); wireToolRemove(); }
+  });
+  wireToolRemove();
+  document.getElementById('pAddStep').addEventListener('click', ()=>{
+    const title = document.getElementById('pStepTitle').value.trim();
+    if(!title){ toast('Indique un titre d\'étape.'); return; }
+    procBuffer.steps.push({
+      id: uid(),
+      title,
+      chapterId: document.getElementById('pStepChapter').value || null,
+      page: +document.getElementById('pStepPage').value || null,
+      note: document.getElementById('pStepNote').value.trim()
+    });
+    document.getElementById('pStepTitle').value='';
+    document.getElementById('pStepPage').value='';
+    document.getElementById('pStepNote').value='';
+    renderPSteps(); wireStepRemove();
+  });
+  wireStepRemove();
+  document.getElementById('pSave').addEventListener('click', async ()=>{
+    procBuffer.title = document.getElementById('pTitle').value.trim();
+    if(!procBuffer.title){ toast('Indique un titre de procédure.'); return; }
+    if(procBuffer.steps.length===0){ toast('Ajoute au moins une étape.'); return; }
+    const g = DATA.guides.find(x=>x.id===procBuffer._guideId);
+    const clean = { id: procBuffer._procId||uid(), title:procBuffer.title, tools:procBuffer.tools, steps:procBuffer.steps };
+    if(procBuffer._procId){
+      const i = g.procedures.findIndex(p=>p.id===procBuffer._procId);
+      g.procedures[i] = clean;
+    } else {
+      g.procedures.push(clean);
+    }
+    await saveData();
+    procBuffer = null;
+    toast('Procédure enregistrée ✓');
+    nav({view:'guide', id:g.id, tab:'procedures'});
+  });
+}
+function wireToolRemove(){
+  document.querySelectorAll('[data-rmtool]').forEach(b=>b.addEventListener('click', ()=>{
+    procBuffer.tools.splice(+b.dataset.rmtool,1); renderPTools(); wireToolRemove();
+  }));
+}
+function wireStepRemove(){
+  document.querySelectorAll('[data-rmstep]').forEach(b=>b.addEventListener('click', ()=>{
+    procBuffer.steps.splice(+b.dataset.rmstep,1); renderPSteps(); wireStepRemove();
+  }));
+}
+
+/* ---- Run Procedure ---- */
+function wireRunProcedure(){
+  document.querySelectorAll('[data-toolcheck]').forEach(el=>{
+    el.addEventListener('change', ()=>{
+      const [runId, idx] = el.dataset.toolcheck.split(':');
+      const run = DATA.runs.find(r=>r.id===runId);
+      if(run){ run.toolsChecked[idx] = el.checked; saveData(); }
+    });
+  });
+  document.querySelectorAll('[data-gotostep]').forEach(el=>{
+    el.addEventListener('click', async ()=>{
+      await updateRun(el.dataset.gotostep, { stepIndex: el.dataset.step });
+      nav({view:'run', runId: el.dataset.gotostep});
+    });
+  });
+  document.querySelectorAll('[data-pauserun]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      toast('Procédure mise en pause — reprends-la depuis l\'onglet Procédure.');
+      nav({view:'procedures'});
+    });
+  });
+  document.querySelectorAll('[data-finishrun]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      DATA.runs = DATA.runs.filter(r=>r.id!==el.dataset.finishrun);
+      saveData();
+      nav({view:'procedures'});
+    });
+  });
+
+  const ctx = getRun(ROUTE.runId);
+  if(ctx && ctx.run.stepIndex!=='tools' && ctx.run.stepIndex!=='report'){
+    loadStepMedia(ROUTE.runId);
+  }
+  const showBtn = document.getElementById('showReportForm');
+  if(showBtn){
+    showBtn.addEventListener('click', ()=>{
+      document.getElementById('reportFormBody').style.display='block';
+      showBtn.closest('.card').style.display='none';
+    });
+    wireExportButtons();
+  }
+}
+
+async function loadStepMedia(runId){
+  const ctx = getRun(runId);
+  if(!ctx) return;
+  const { g, p, run } = ctx;
+  const step = p.steps[+run.stepIndex];
+  const media = document.getElementById('stepMedia');
+  if(!step || !step.chapterId || !step.page){ return; }
+  const chap = g.chapters.find(c=>c.id===step.chapterId);
+  if(!chap || !chap.githubUrl) return;
+  try{
+    const pdf = await pdfjsLib.getDocument(chap.githubUrl).promise;
+    const page = await pdf.getPage(step.page);
+    const viewport = page.getViewport({ scale: 2 });
+    const canvas = document.createElement('canvas');
+    canvas.width = viewport.width; canvas.height = viewport.height;
+    await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+    media.innerHTML = '';
+    const img = document.createElement('img');
+    img.src = canvas.toDataURL('image/png');
+    img.addEventListener('click', ()=>{
+      const overlay = document.createElement('div');
+      overlay.className='fullscreen-img';
+      const big = document.createElement('img'); big.src = img.src;
+      overlay.appendChild(big);
+      const closeBtn = document.createElement('button'); closeBtn.className='fs-close'; closeBtn.textContent='✕';
+      closeBtn.addEventListener('click', ()=>{overlay.remove(); closeBtn.remove();});
+      document.body.appendChild(overlay); document.body.appendChild(closeBtn);
+    });
+    media.appendChild(img);
+  }catch(e){
+    media.innerHTML = `<div class="ph">Impossible de charger le schéma (page ${step.page}).</div>`;
+  }
+}
+
+function wireExportButtons(){
+  document.getElementById('exportPdf').addEventListener('click', exportReportAsPdf);
+  document.getElementById('exportPrint').addEventListener('click', exportReportPrint);
+  const btnPs = document.getElementById('exportPitstop');
+  if(btnPs && !btnPs.disabled) btnPs.addEventListener('click', ()=> exportReportToPitstop(btnPs.dataset.run));
+}
+function getReportFields(){
+  return {
+    vehicule: document.getElementById('rVehicule').value.trim(),
+    km: document.getElementById('rKm').value.trim(),
+    desc: document.getElementById('rDesc').value.trim(),
+    note: document.getElementById('rNote').value.trim(),
+    date: new Date().toISOString().slice(0,10)
+  };
+}
+function exportReportAsPdf(){
+  const f = getReportFields();
+  const w = window.open('', '_blank');
+  w.document.write(`
+    <html><head><title>Compte-rendu</title></head>
+    <body style="font-family:sans-serif;padding:40px;">
+      <h1>Compte-rendu d'intervention</h1>
+      <p><b>Véhicule :</b> ${esc(f.vehicule)}</p>
+      <p><b>Date :</b> ${f.date}</p>
+      <p><b>Kilométrage :</b> ${esc(f.km)}</p>
+      <p><b>Description :</b> ${esc(f.desc)}</p>
+      ${f.note?`<p><b>Note :</b> ${esc(f.note)}</p>`:''}
+    </body></html>`);
+  w.document.close();
+  toast('Ouvre "Imprimer > Enregistrer en PDF" dans la fenêtre ouverte.');
+}
+function exportReportPrint(){
+  exportReportAsPdf();
+  setTimeout(()=>{}, 300);
+}
+async function exportReportToPitstop(runId){
+  const f = getReportFields();
+  const s = DATA.settings;
+  try{
+    const path = `${s.bridgeFolder}/${Date.now()}-${uid()}.json`;
+    await ghUploadJSON(s.bridgeOwner, s.bridgeRepo, s.ghBranch||'main', path, {
+      source:'MecaGuide', ...f, createdAt: Date.now()
+    }, `Compte-rendu MecaGuide: ${f.desc}`);
+    DATA.runs = DATA.runs.filter(r=>r.id!==runId);
+    await saveData();
+    toast('Déposé — à valider dans PitStop ✓');
+    nav({view:'procedures'});
+  }catch(e){
+    console.error(e);
+    toast('Échec du dépôt vers PitStop.');
+  }
+}
+
+/* ---- Settings ---- */
+function wireSettings(){
+  document.getElementById('notifToggle').addEventListener('click', function(){
+    this.classList.toggle('on');
+  });
+  document.getElementById('saveSettings').addEventListener('click', async ()=>{
+    DATA.settings = {
+      ghToken: document.getElementById('stGhToken').value.trim(),
+      ghOwner: document.getElementById('stGhOwner').value.trim(),
+      ghRepo: document.getElementById('stGhRepo').value.trim(),
+      ghBranch: document.getElementById('stGhBranch').value.trim() || 'main',
+      bridgeOwner: document.getElementById('stBrOwner').value.trim(),
+      bridgeRepo: document.getElementById('stBrRepo').value.trim(),
+      bridgeFolder: document.getElementById('stBrFolder').value.trim() || 'comptes-rendus-en-attente',
+      notifyPending: document.getElementById('notifToggle').classList.contains('on')
+    };
+    await saveData();
+    toast('Réglages enregistrés ✓');
+    nav({view:'home'});
+  });
+}
+
+/* ---- Pending ---- */
+async function wirePending(){
+  await fetchPendingReports();
+  const list = document.getElementById('pendingList');
+  if(!bridgeConfigured()) return;
+  list.innerHTML = PENDING_REPORTS.length===0 ? `<div class="hint">Aucun compte-rendu en attente.</div>` :
+    PENDING_REPORTS.map(r=>`
+    <div class="card" style="margin-bottom:8px;">
+      <div style="font-weight:700;">${esc(r.desc||r.vehicule)}</div>
+      <div class="hint">${esc(r.vehicule)} · ${esc(r.km)} km · ${esc(r.date)}</div>
+    </div>`).join('');
+}
+
+/* ---------- INIT ---------- */
+(async function init(){
+  await loadData();
+  render();
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('./sw.js').catch(err=>console.warn('SW non enregistré', err));
+  }
+})();
+</script>
+</body>
+</html>
